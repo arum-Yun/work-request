@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>업무 요청서</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:       #4F46E5;
+      --primary-light: #EEF2FF;
+      --primary-mid:   #818CF8;
+      --accent:        #6366F1;
+      --surface:       #FFFFFF;
+      --surface-alt:   #F8FAFC;
+      --border:        #E2E8F0;
+      --border-focus:  #4F46E5;
+      --text-main:     #1E293B;
+      --text-sub:      #64748B;
+      --text-hint:     #94A3B8;
+      --status-new:    #EEF2FF;
+      --status-new-t:  #4F46E5;
+      --status-review: #FFF7ED;
+      --status-review-t:#EA580C;
+      --status-wip:    #F0FDF4;
+      --status-wip-t:  #16A34A;
+      --status-done:   #F0F9FF;
+      --status-done-t: #0284C7;
+      --status-rej:    #FFF1F2;
+      --status-rej-t:  #E11D48;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08);
+    }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #F1F5F9;
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 40px 20px 80px;
+    }
+
+    /* ── PAGE WRAPPER ── */
+    .page-wrapper {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* ── HEADER BANNER ── */
+    .form-header {
+      background: linear-gradient(135deg, #312E81 0%, #4F46E5 60%, #818CF8 100%);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      padding: 36px 40px 32px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .form-header::after {
+      content: '';
+      position: absolute;
+      right: -40px; top: -40px;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+    }
+    .form-header::before {
+      content: '';
+      position: absolute;
+      right: 60px; bottom: -60px;
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.05);
+    }
+    .header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .header-title-group h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    .header-title-group p {
+      font-size: 13px;
+      font-weight: 400;
+      opacity: .75;
+    }
+    .request-id-badge {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.3);
+      backdrop-filter: blur(6px);
+      border-radius: 8px;
+      padding: 10px 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .request-id-badge .id-label {
+      font-size: 10px;
+      font-weight: 500;
+      opacity: .7;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .request-id-badge .id-value {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    .status-label {
+      font-size: 12px;
+      opacity: .7;
+    }
+    .status-select-wrapper {
+      position: relative;
+    }
+    .status-select {
+      appearance: none;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 20px;
+      color: #fff;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 5px 28px 5px 14px;
+      cursor: pointer;
+    }
+    .status-select option { color: var(--text-main); background: #fff; }
+    .status-caret {
+      position: absolute;
+      right: 10px; top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      font-size: 10px;
+      opacity: .8;
+    }
+
+    /* ── FORM BODY ── */
+    .form-body {
+      background: var(--surface);
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 0 40px 40px;
+    }
+
+    /* ── META GRID ── */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      padding: 28px 0 24px;
+    }
+    .meta-item {
+      padding: 8px 12px 8px 0;
+    }
+    .meta-item:nth-child(even) {
+      padding-left: 24px;
+      border-left: 1px solid var(--border);
+    }
+    .meta-item.full { grid-column: 1 / -1; border-left: none; padding-left: 0; }
+    .meta-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-sub);
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .meta-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px;
+      color: var(--text-main);
+      background: var(--surface-alt);
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    .meta-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+      background: #fff;
+    }
+    .meta-input::placeholder { color: var(--text-hint); }
+    .priority-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 32px;
+      cursor: pointer;
+    }
+
+    /* ── PRIORITY PILLS ── */
+    .priority-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .priority-pill {
+      display: none;
+    }
+    .priority-pill + label {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      color: var(--text-sub);
+      transition: all .15s;
+      user-select: none;
+    }
+    .priority-pill:checked + label {
+      border-color: currentColor;
+    }
+    #p-urgent:checked + label { background: #FFF1F2; color: #E11D48; border-color: #E11D48; }
+    #p-high:checked   + label { background: #FFF7ED; color: #EA580C; border-color: #EA580C; }
+    #p-normal:checked + label { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+    #p-low:checked    + label { background: #F0FDF4; color: #16A34A; border-color: #16A34A; }
+
+    /* ── SECTION DIVIDER ── */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 32px 0 20px;
+    }
+    .section-divider-bar {
+      width: 4px;
+      height: 20px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+    .section-divider h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .section-divider .section-sub {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-left: 4px;
+    }
+
+    /* ── QUESTION CARD ── */
+    .q-card {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      transition: box-shadow .2s;
+    }
+    .q-card:focus-within {
+      box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+      border-color: var(--primary-mid);
+    }
+    .q-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px; height: 24px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+    .q-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .q-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .q-hint {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 12px;
+      padding-left: 32px;
+    }
+    .q-textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-main);
+      background: #fff;
+      resize: vertical;
+      min-height: 100px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .q-textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+    }
+    .q-textarea::placeholder { color: var(--text-hint); font-size: 13px; }
+
+    /* ── PROMISE SECTION ── */
+    .promise-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .promise-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .promise-badge {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .promise-input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px;
+      color: var(--text-main);
+      background: #fff;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .promise-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+    }
+    .promise-input::placeholder { color: var(--text-hint); font-size: 13px; }
+
+    /* ── COMMENT SECTION ── */
+    .comment-section {
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      margin-top: 16px;
+    }
+    .comment-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .comment-icon {
+      font-size: 16px;
+    }
+    .comment-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #92400E;
+    }
+    .comment-textarea {
+      width: 100%;
+      border: 1px solid #FDE68A;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-main);
+      background: #fff;
+      resize: vertical;
+      min-height: 80px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .comment-textarea:focus { border-color: #F59E0B; }
+    .comment-textarea::placeholder { color: #D97706; font-size: 13px; opacity: .6; }
+
+    /* ── ATTACHMENT ── */
+    .attach-area {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      text-align: center;
+      color: var(--text-hint);
+      font-size: 13px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      margin-top: 8px;
+    }
+    .attach-area:hover {
+      border-color: var(--primary-mid);
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .attach-icon { font-size: 24px; margin-bottom: 8px; }
+
+    /* ── REFEREES ── */
+    .cc-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .cc-chip {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cc-chip-remove {
+      cursor: pointer;
+      opacity: .6;
+      transition: opacity .15s;
+      font-size: 14px;
+      line-height: 1;
+    }
+    .cc-chip-remove:hover { opacity: 1; }
+    .cc-add-btn {
+      background: none;
+      border: 1.5px dashed var(--primary-mid);
+      color: var(--primary);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .cc-add-btn:hover { background: var(--primary-light); }
+
+    /* ── FOOTER ACTIONS ── */
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 36px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .btn {
+      padding: 11px 24px;
+      border-radius: var(--radius-sm);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      border: none;
+    }
+    .btn-ghost {
+      background: var(--surface-alt);
+      color: var(--text-sub);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: var(--border); color: var(--text-main); }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(79,70,229,.3);
+    }
+    .btn-primary:hover {
+      background: #4338CA;
+      box-shadow: 0 4px 12px rgba(79,70,229,.4);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+    }
+    .btn-secondary:hover { background: var(--primary-light); }
+
+    /* ── TOOLTIP ── */
+    .tooltip-wrap { position: relative; display: inline-flex; }
+    .tooltip-icon {
+      width: 16px; height: 16px;
+      background: var(--text-hint);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: help;
+      margin-left: 6px;
+      flex-shrink: 0;
+    }
+    .tooltip-box {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1E293B;
+      color: #fff;
+      font-size: 11px;
+      border-radius: 6px;
+      padding: 7px 10px;
+      white-space: nowrap;
+      z-index: 10;
+      pointer-events: none;
+      box-shadow: var(--shadow-md);
+    }
+    .tooltip-wrap:hover .tooltip-box { display: block; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .form-header { padding: 24px 20px 20px; }
+      .form-body { padding: 0 20px 28px; }
+      .meta-grid { grid-template-columns: 1fr; }
+      .meta-item:nth-child(even) { padding-left: 0; border-left: none; }
+      .meta-item.full { grid-column: 1; }
+      .form-actions { flex-direction: column; }
+      .btn { width: 100%; text-align: center; }
+      .header-top { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ── HEADER ── -->
+  <div class="form-header">
+    <div class="header-top">
+      <div class="header-title-group">
+        <h1>업무 요청서</h1>
+        <p>Work Request Form · Design Team</p>
+      </div>
+      <div class="request-id-badge">
+        <div class="id-label">Request ID</div>
+        <div class="id-value">DS-2609-001</div>
+      </div>
+    </div>
+    <div class="status-row">
+      <span class="status-label">진행 상태</span>
+      <div class="status-select-wrapper">
+        <select class="status-select" id="statusSelect">
+          <option value="new">🔵 접수</option>
+          <option value="review">🟠 검토 중</option>
+          <option value="wip">🟢 진행 중</option>
+          <option value="done">🩵 완료</option>
+          <option value="rejected">🔴 반려</option>
+        </select>
+        <span class="status-caret">▼</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BODY ── -->
+  <div class="form-body">
+
+    <!-- META FIELDS -->
+    <div class="meta-grid">
+      <div class="meta-item">
+        <div class="meta-label">작성일자</div>
+        <input type="date" class="meta-input" id="dateWritten" />
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">희망 완료일</div>
+        <input type="date" class="meta-input" id="dateDue" />
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">요청 부서</div>
+        <select class="meta-input" id="deptFrom">
+          <option value="">부서 선택</option>
+        </select>
+        <input type="text" class="meta-input" id="nameFrom" placeholder="작성자 이름" style="margin-top:6px;" />
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">수신 부서</div>
+        <select class="meta-input" id="deptTo" onchange="updateRequestId()">
+          <option value="">부서 선택</option>
+        </select>
+        <input type="text" class="meta-input" id="nameTo" placeholder="담당자 이름" style="margin-top:6px;" />
+      </div>
+      <div class="meta-item full">
+        <div class="meta-label">작업명</div>
+        <input type="text" class="meta-input" placeholder="요청하는 업무를 한 줄로 요약해 주세요" />
+      </div>
+      <div class="meta-item full">
+        <div class="meta-label">우선순위</div>
+        <div class="priority-pills">
+          <input type="radio" name="priority" id="p-urgent" class="priority-pill" value="urgent" />
+          <label for="p-urgent">🔴 긴급</label>
+          <input type="radio" name="priority" id="p-high" class="priority-pill" value="high" />
+          <label for="p-high">🟠 높음</label>
+          <input type="radio" name="priority" id="p-normal" class="priority-pill" value="normal" checked />
+          <label for="p-normal">🔵 보통</label>
+          <input type="radio" name="priority" id="p-low" class="priority-pill" value="low" />
+          <label for="p-low">🟢 낮음</label>
+        </div>
+      </div>
+      <div class="meta-item full">
+        <div class="meta-label" style="display:flex;align-items:center;">
+          참조자
+          <div class="tooltip-wrap">
+            <span class="tooltip-icon">?</span>
+            <div class="tooltip-box">요청서 내용을 공유받을 관련자를 추가하세요</div>
+          </div>
+        </div>
+        <div class="cc-row" id="ccRow">
+          <div class="cc-chip">이마케팅 <span class="cc-chip-remove" onclick="this.parentElement.remove()">×</span></div>
+          <div class="cc-chip">박팀장 <span class="cc-chip-remove" onclick="this.parentElement.remove()">×</span></div>
+          <button class="cc-add-btn" onclick="addCC()">+ 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 1: 상세 요청 내용 -->
+    <div class="section-divider">
+      <div class="section-divider-bar"></div>
+      <h2>상세 요청 내용</h2>
+    </div>
+
+    <!-- Q1 -->
+    <div class="q-card">
+      <div class="q-header">
+        <span class="q-number">1</span>
+        <span class="q-title">요청 목적</span>
+      </div>
+      <div class="q-hint">요청하는 이유와 해결해야 할 것이 무엇인가요? (배경 및 문제 상황)</div>
+      <textarea class="q-textarea" rows="4" placeholder="예) 10월 신제품 런칭을 앞두고 브랜드 키비주얼이 필요합니다. 현재 임시 이미지로 운영 중이며, 고객 인지도 향상을 위한 통일된 비주얼이 없는 상태입니다."></textarea>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q-card">
+      <div class="q-header">
+        <span class="q-number">2</span>
+        <span class="q-title">완결 조건</span>
+      </div>
+      <div class="q-hint">업무가 성공적으로 종결되기 위해 필요한 조건은 무엇인가요? (희망하는 결과물)</div>
+      <textarea class="q-textarea" rows="4" placeholder="예) SNS용 키비주얼 3종 (1:1, 9:16, 16:9), 파일 형식 PNG + AI 원본, 브랜드 가이드라인 적용 완료 상태"></textarea>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q-card">
+      <div class="q-header">
+        <span class="q-number">3</span>
+        <span class="q-title">제약 조건</span>
+      </div>
+      <div class="q-hint">작업 시 지켜야 할 것 / 할 수 없는 것은 무엇인가요? (준수·금지사항)</div>
+      <textarea class="q-textarea" rows="4" placeholder="예) 브랜드 컬러 #4F46E5 필수 사용, 경쟁사 로고 노출 금지, 인물 사진 사용 불가"></textarea>
+    </div>
+
+    <!-- SECTION 2: 협의 내용 -->
+    <div class="section-divider">
+      <div class="section-divider-bar"></div>
+      <h2>요청자 &amp; 담당자 협의 내용</h2>
+    </div>
+
+    <!-- Q4 -->
+    <div class="q-card">
+      <div class="q-header">
+        <span class="q-number">4</span>
+        <span class="q-title">실행 약속</span>
+      </div>
+      <div class="q-hint">업무 범위, 약속 기한, 일정 지연 시 사전 알림 시점을 구체적으로 작성해 주세요</div>
+      <div class="promise-grid">
+        <div class="promise-row">
+          <div class="promise-badge">①</div>
+          <input type="text" class="promise-input" placeholder="업무 범위 — 예) SNS 키비주얼 3종 제작으로 범위 한정" />
+        </div>
+        <div class="promise-row">
+          <div class="promise-badge">②</div>
+          <input type="text" class="promise-input" placeholder="약속 기한 — 예) 9월 30일 최종 납품, 중간 시안 9월 25일" />
+        </div>
+        <div class="promise-row">
+          <div class="promise-badge">③</div>
+          <input type="text" class="promise-input" placeholder="사전 알림 — 예) 납품 3영업일 전까지 지연 가능 여부 공유" />
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMENT (담당자용) -->
+    <div class="comment-section">
+      <div class="comment-header">
+        <span class="comment-icon">💬</span>
+        <span class="comment-title">담당자 코멘트 (수신측 전용)</span>
+      </div>
+      <textarea class="comment-textarea" rows="3" placeholder="검토 의견, 추가 확인 사항, 진행 메모 등을 입력하세요"></textarea>
+    </div>
+
+    <!-- ATTACHMENT -->
+    <div class="section-divider" style="margin-top:28px;">
+      <div class="section-divider-bar"></div>
+      <h2>첨부파일</h2>
+    </div>
+    <div class="attach-area" onclick="document.getElementById('fileInput').click()">
+      <div class="attach-icon">📎</div>
+      클릭하거나 파일을 드래그하여 업로드<br>
+      <span style="font-size:11px;margin-top:4px;display:block;">참고 자료, 레퍼런스 이미지, 화면 캡처 등</span>
+    </div>
+    <input type="file" id="fileInput" multiple style="display:none;" />
+
+    <!-- ACTIONS -->
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="saveDraft()">임시 저장</button>
+      <button class="btn btn-secondary" onclick="window.print()">미리 보기</button>
+      <button class="btn btn-primary" id="submitBtn" onclick="handleSubmit()">요청서 제출 →</button>
+    </div>
+
+  </div><!-- /form-body -->
+</div><!-- /page-wrapper -->
+
+<script>
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 부서 코드 테이블 — 추후 이곳만 수정하면 전체 반영
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const DEPARTMENTS = [
+    { name: '영업팀',     code: 'SL' },
+    { name: '부동산팀',   code: 'RE' },
+    { name: '운영기획팀', code: 'OP' },
+    { name: '고객경험팀', code: 'CX' },
+    { name: '사업전략팀', code: 'BS' },
+    { name: '디자인팀',   code: 'DS' },
+    { name: '마케팅팀',   code: 'MK' },
+    { name: '백본팀',     code: 'BB' },
+  ];
+
+  // ── 드롭다운 채우기 ──
+  function populateSelects() {
+    ['deptFrom', 'deptTo'].forEach(id => {
+      const sel = document.getElementById(id);
+      DEPARTMENTS.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.code;
+        opt.textContent = `${d.name} (${d.code})`;
+        sel.appendChild(opt);
+      });
+    });
+  }
+
+  // ── Request ID 자동 생성 ──
+  // 포맷: [수신부서코드]-[YYMM]-[순번]
+  // 순번은 localStorage 기반으로 월별 자동 증가 (실제 운영 시 백엔드 대체 예정)
+  function getNextSeq(code, yyyymm) {
+    const key = `seq_${code}_${yyyymm}`;
+    const current = parseInt(localStorage.getItem(key) || '0', 10);
+    return current + 1; // 실제 저장은 제출 시점에
+  }
+
+  function updateRequestId() {
+    const code = document.getElementById('deptTo').value;
+    if (!code) {
+      document.querySelector('.id-value').textContent = '—';
+      document.querySelector('.header-title-group p').textContent = 'Work Request Form';
+      return;
+    }
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyymm = `${yy}${mm}`;
+    const seq = getNextSeq(code, yyyymm);
+    const seqStr = String(seq).padStart(3, '0');
+    const requestId = `${code}-${yyyymm}-${seqStr}`;
+    document.querySelector('.id-value').textContent = requestId;
+
+    // 헤더 서브타이틀도 업데이트
+    const dept = DEPARTMENTS.find(d => d.code === code);
+    document.querySelector('.header-title-group p').textContent =
+      `Work Request Form · ${dept ? dept.name : ''}`;
+  }
+
+  // ── 오늘 날짜 자동 설정 ──
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('dateWritten').value = today;
+
+  // ── 참조자 추가 ──
+  function addCC() {
+    const name = prompt('참조자 이름을 입력하세요');
+    if (!name || !name.trim()) return;
+    const row = document.getElementById('ccRow');
+    const chip = document.createElement('div');
+    chip.className = 'cc-chip';
+    chip.innerHTML = `${name.trim()} <span class="cc-chip-remove" onclick="this.parentElement.remove()">×</span>`;
+    row.insertBefore(chip, row.lastElementChild);
+  }
+
+  // ── 파일 드래그앤드롭 ──
+  const attachArea = document.querySelector('.attach-area');
+  attachArea.addEventListener('dragover', e => {
+    e.preventDefault();
+    attachArea.style.borderColor = 'var(--primary)';
+    attachArea.style.background = 'var(--primary-light)';
+  });
+  attachArea.addEventListener('dragleave', () => {
+    attachArea.style.borderColor = '';
+    attachArea.style.background = '';
+  });
+  attachArea.addEventListener('drop', e => {
+    e.preventDefault();
+    attachArea.style.borderColor = '';
+    attachArea.style.background = '';
+    const files = [...e.dataTransfer.files];
+    if (files.length) {
+      attachArea.innerHTML = `<div class="attach-icon">✅</div>${files.map(f => f.name).join(', ')}<br><span style="font-size:11px;margin-top:4px;display:block;color:var(--primary)">${files.length}개 파일 첨부됨</span>`;
+    }
+  });
+
+  // ── 초기화 ──
+  populateSelects();
+
+  // ── 임시 저장 ──
+  function saveDraft() {
+    const data = collectFormData();
+    localStorage.setItem('draft', JSON.stringify(data));
+    alert('임시 저장되었습니다.');
+  }
+
+  // ── 폼 데이터 수집 ──
+  function collectFormData() {
+    const ccChips = [...document.querySelectorAll('.cc-chip')].map(c => c.textContent.replace('×','').trim());
+    const priority = document.querySelector('.priority-pill:checked')?.value || 'normal';
+    const textareas = document.querySelectorAll('.q-textarea');
+    const promises  = document.querySelectorAll('.promise-input');
+    return {
+      created_at: document.getElementById('dateWritten').value,
+      due_date:   document.getElementById('dateDue').value,
+      from_dept:  document.getElementById('deptFrom').value,
+      from_name:  document.getElementById('nameFrom').value,
+      to_dept:    document.getElementById('deptTo').value,
+      to_name:    document.getElementById('nameTo').value,
+      task_name:  document.querySelector('.meta-item.full .meta-input').value,
+      priority,
+      purpose:    textareas[0]?.value || '',
+      condition:  textareas[1]?.value || '',
+      constraint: textareas[2]?.value || '',
+      promise_1:  promises[0]?.value || '',
+      promise_2:  promises[1]?.value || '',
+      promise_3:  promises[2]?.value || '',
+      cc: ccChips,
+    };
+  }
+
+  // ── 유효성 검사 ──
+  function validate(data) {
+    if (!data.from_dept) return '요청 부서를 선택해주세요.';
+    if (!data.from_name) return '작성자 이름을 입력해주세요.';
+    if (!data.to_dept)   return '수신 부서를 선택해주세요.';
+    if (!data.task_name) return '작업명을 입력해주세요.';
+    if (!data.purpose)   return '요청 목적을 입력해주세요.';
+    return null;
+  }
+
+  // ── 제출 ──
+  async function handleSubmit() {
+    const data = collectFormData();
+    const err  = validate(data);
+    if (err) { alert(err); return; }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '제출 중...';
+
+    try {
+      const result = await submitRequest(data);
+      // 채번된 ID를 헤더에 반영
+      document.querySelector('.id-value').textContent = result.request_id;
+      // 순번 localStorage 저장
+      const code   = data.to_dept;
+      const now    = new Date();
+      const yy     = String(now.getFullYear()).slice(2);
+      const mm     = String(now.getMonth()+1).padStart(2,'0');
+      const seqKey = `seq_${code}_${yy}${mm}`;
+      const seq    = parseInt(result.request_id.split('-')[2], 10);
+      localStorage.setItem(seqKey, seq);
+
+      alert(`✅ 요청서가 제출되었습니다!\nRequest ID: ${result.request_id}\n담당자에게 슬랙 DM이 발송되었습니다.`);
+      btn.textContent = '제출 완료 ✓';
+      btn.style.background = '#16A34A';
+    } catch(e) {
+      alert('제출 중 오류가 발생했습니다: ' + e.message);
+      btn.disabled = false;
+      btn.textContent = '요청서 제출 →';
+    }
+  }
+</script>
+
+<script src="api.js"></script>
+</body>
+</html>

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>전체 요청서</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #4F46E5; --primary-light: #EEF2FF; --primary-mid: #818CF8;
+      --surface: #FFFFFF; --surface-alt: #F8FAFC;
+      --border: #E2E8F0; --text-main: #1E293B; --text-sub: #64748B; --text-hint: #94A3B8;
+      --radius-sm: 6px; --radius-md: 12px; --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06); --shadow-md: 0 4px 16px rgba(0,0,0,.08);
+      --c-new:#4F46E5; --bg-new:#EEF2FF; --c-review:#EA580C; --bg-review:#FFF7ED;
+      --c-wip:#16A34A; --bg-wip:#F0FDF4; --c-done:#0284C7; --bg-done:#F0F9FF;
+      --c-rejected:#E11D48; --bg-rejected:#FFF1F2;
+    }
+    body { font-family:'Noto Sans KR',sans-serif; background:#F1F5F9; color:var(--text-main); min-height:100vh; }
+
+    /* ── SIDEBAR (공통) ── */
+    .sidebar {
+      position:fixed; top:0; left:0; width:220px; height:100vh;
+      background:#1E1B4B; display:flex; flex-direction:column; padding-bottom:24px; z-index:100;
+    }
+    .sidebar-logo { padding:24px 20px 20px; border-bottom:1px solid rgba(255,255,255,.08); margin-bottom:8px; }
+    .sidebar-logo h2 { font-size:15px; font-weight:700; color:#fff; }
+    .sidebar-logo p  { font-size:11px; color:rgba(255,255,255,.4); margin-top:2px; }
+    .sidebar-nav { flex:1; padding:0 12px; overflow-y:auto; }
+    .nav-group-label { font-size:10px; font-weight:600; color:rgba(255,255,255,.3); letter-spacing:1px; text-transform:uppercase; padding:16px 8px 6px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:var(--radius-sm); color:rgba(255,255,255,.6); font-size:13px; font-weight:500; cursor:pointer; transition:all .15s; text-decoration:none; margin-bottom:2px; }
+    .nav-item:hover { background:rgba(255,255,255,.08); color:#fff; }
+    .nav-item.active { background:var(--primary); color:#fff; }
+    .nav-icon { font-size:15px; width:20px; text-align:center; }
+    .nav-badge { margin-left:auto; background:rgba(255,255,255,.15); border-radius:10px; padding:1px 7px; font-size:11px; font-weight:700; }
+    .nav-item.active .nav-badge { background:rgba(255,255,255,.25); }
+    .sidebar-bottom { padding:16px 12px 0; border-top:1px solid rgba(255,255,255,.08); }
+    .new-request-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:11px; background:var(--primary); color:#fff; border:none; border-radius:var(--radius-sm); font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:background .15s; }
+    .new-request-btn:hover { background:#4338CA; }
+
+    /* ── MAIN ── */
+    .main { margin-left:220px; padding:28px 32px 60px; min-height:100vh; }
+
+    /* ── TOP BAR ── */
+    .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+    .topbar-left h1 { font-size:20px; font-weight:700; letter-spacing:-.4px; }
+    .topbar-left p  { font-size:13px; color:var(--text-sub); margin-top:2px; }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      display:flex; align-items:center; gap:10px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius-md); padding:14px 20px;
+      margin-bottom:16px; flex-wrap:wrap;
+    }
+    .filter-bar label { font-size:11px; font-weight:600; color:var(--text-sub); text-transform:uppercase; letter-spacing:.4px; margin-right:4px; }
+    .filter-select {
+      border:1px solid var(--border); border-radius:var(--radius-sm);
+      padding:6px 28px 6px 10px; font-family:'Noto Sans KR',sans-serif;
+      font-size:13px; color:var(--text-main); background:var(--surface-alt);
+      outline:none; cursor:pointer; appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 8px center;
+    }
+    .filter-select:focus { border-color:var(--primary); }
+    .search-input {
+      flex:1; min-width:180px;
+      border:1px solid var(--border); border-radius:var(--radius-sm);
+      padding:7px 12px; font-family:'Noto Sans KR',sans-serif;
+      font-size:13px; color:var(--text-main); background:var(--surface-alt); outline:none;
+    }
+    .search-input:focus { border-color:var(--primary); }
+    .search-input::placeholder { color:var(--text-hint); }
+    .filter-reset { padding:6px 14px; border-radius:var(--radius-sm); border:1px solid var(--border); background:none; font-family:'Noto Sans KR',sans-serif; font-size:12px; color:var(--text-sub); cursor:pointer; transition:all .15s; }
+    .filter-reset:hover { border-color:var(--primary); color:var(--primary); }
+
+    /* ── TABS ── */
+    .tab-row { display:flex; gap:4px; margin-bottom:14px; }
+    .tab-btn { padding:7px 18px; border-radius:20px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; border:none; cursor:pointer; background:var(--surface); color:var(--text-sub); border:1px solid var(--border); transition:all .15s; }
+    .tab-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .tab-btn:hover:not(.active) { border-color:var(--primary); color:var(--primary); }
+    .tab-count { font-size:11px; margin-left:5px; opacity:.8; }
+
+    /* ── TABLE ── */
+    .table-wrap { background:var(--surface); border-radius:var(--radius-md); box-shadow:var(--shadow-sm); border:1px solid var(--border); overflow:hidden; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    thead tr { background:var(--surface-alt); border-bottom:1px solid var(--border); }
+    th { padding:11px 16px; text-align:left; font-size:11px; font-weight:600; color:var(--text-sub); letter-spacing:.4px; text-transform:uppercase; white-space:nowrap; cursor:pointer; user-select:none; }
+    th:hover { color:var(--primary); }
+    tbody tr { border-bottom:1px solid var(--border); transition:background .12s; cursor:pointer; }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:#F8FAFF; }
+    td { padding:13px 16px; vertical-align:middle; }
+
+    .status-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
+    .status-badge.new      { background:var(--bg-new);      color:var(--c-new); }
+    .status-badge.review   { background:var(--bg-review);   color:var(--c-review); }
+    .status-badge.wip      { background:var(--bg-wip);      color:var(--c-wip); }
+    .status-badge.done     { background:var(--bg-done);     color:var(--c-done); }
+    .status-badge.rejected { background:var(--bg-rejected); color:var(--c-rejected); }
+    .status-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+    .priority-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700; }
+    .priority-badge.urgent { background:#FFF1F2; color:#E11D48; }
+    .priority-badge.high   { background:#FFF7ED; color:#EA580C; }
+    .priority-badge.normal { background:var(--primary-light); color:var(--primary); }
+    .priority-badge.low    { background:#F0FDF4; color:#16A34A; }
+
+    .request-id { font-family:'Courier New',monospace; font-size:12px; font-weight:700; color:var(--primary); background:var(--primary-light); padding:2px 8px; border-radius:4px; white-space:nowrap; }
+    .dept-tag { display:inline-block; padding:2px 8px; background:var(--surface-alt); border:1px solid var(--border); border-radius:4px; font-size:11px; color:var(--text-sub); font-weight:600; }
+    .task-name { font-weight:500; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .task-name small { display:block; font-size:11px; color:var(--text-hint); margin-top:2px; }
+    .date-cell { font-size:12px; color:var(--text-sub); white-space:nowrap; }
+    .date-cell.overdue { color:#E11D48; font-weight:600; }
+    .date-cell.soon    { color:#EA580C; font-weight:600; }
+    .action-btn { padding:4px 10px; border-radius:var(--radius-sm); border:1px solid var(--border); background:transparent; font-family:'Noto Sans KR',sans-serif; font-size:12px; color:var(--text-sub); cursor:pointer; transition:all .15s; }
+    .action-btn:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-light); }
+
+    /* ── PAGINATION ── */
+    .pagination { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); background:var(--surface-alt); font-size:12px; color:var(--text-sub); }
+    .page-btns { display:flex; gap:4px; }
+    .page-btn { width:28px; height:28px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--surface); font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .12s; color:var(--text-sub); }
+    .page-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .page-btn:hover:not(.active) { border-color:var(--primary); color:var(--primary); }
+
+    .empty-row td { text-align:center; padding:48px; color:var(--text-hint); font-size:13px; }
+
+    @media (max-width:768px) {
+      .sidebar { display:none; }
+      .main { margin-left:0; padding:16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h2>Work Request</h2>
+    <p>업무 요청 관리 시스템</p>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-group-label">메뉴</div>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon">📊</span> 대시보드</a>
+    <a class="nav-item active" href="requests.html"><span class="nav-icon">📋</span> 전체 요청서 <span class="nav-badge">12</span></a>
+    <div class="nav-group-label">내 업무</div>
+    <a class="nav-item" href="requests.html?view=mine"     id="nav-mine"><span class="nav-icon">✉️</span> 내가 보낸 요청</a>
+    <a class="nav-item" href="requests.html?view=received" id="nav-recv"><span class="nav-icon">📥</span> 내가 받은 요청 <span class="nav-badge">5</span></a>
+    <div class="nav-group-label">부서별 보기</div>
+    <a class="nav-item" href="requests.html?dept=DS"><span class="nav-icon">🎨</span> 디자인팀</a>
+    <a class="nav-item" href="requests.html?dept=MK"><span class="nav-icon">📣</span> 마케팅팀</a>
+    <a class="nav-item" href="requests.html?dept=OP"><span class="nav-icon">⚙️</span> 운영기획팀</a>
+    <a class="nav-item" href="requests.html?dept=ALL"><span class="nav-icon">🏢</span> 전체 부서</a>
+  </div>
+  <div class="sidebar-bottom">
+    <button class="new-request-btn" onclick="window.open('index.html','_blank')">＋ 새 요청서 작성</button>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1 id="pageTitle">전체 요청서</h1>
+      <p id="pageSubtitle">모든 업무 요청을 확인하고 관리하세요</p>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <label>상태</label>
+    <select class="filter-select" id="fStatus" onchange="applyFilters()">
+      <option value="">전체</option>
+      <option value="new">접수</option>
+      <option value="review">검토 중</option>
+      <option value="wip">진행 중</option>
+      <option value="done">완료</option>
+      <option value="rejected">반려</option>
+    </select>
+    <label>우선순위</label>
+    <select class="filter-select" id="fPriority" onchange="applyFilters()">
+      <option value="">전체</option>
+      <option value="urgent">긴급</option>
+      <option value="high">높음</option>
+      <option value="normal">보통</option>
+      <option value="low">낮음</option>
+    </select>
+    <label>수신 팀</label>
+    <select class="filter-select" id="fDept" onchange="applyFilters()">
+      <option value="">전체</option>
+    </select>
+    <input type="text" class="search-input" id="fSearch" placeholder="🔍 ID, 작업명, 담당자 검색" oninput="applyFilters()" />
+    <button class="filter-reset" onclick="resetFilters()">초기화</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-row">
+    <button class="tab-btn active" id="tab-all"      onclick="switchTab('all')">전체 <span class="tab-count" id="tc-all"></span></button>
+    <button class="tab-btn"        id="tab-mine"     onclick="switchTab('mine')">내가 보낸 요청</button>
+    <button class="tab-btn"        id="tab-received" onclick="switchTab('received')">내가 받은 요청 <span class="tab-count" id="tc-received"></span></button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortBy('id')">Request ID ↕</th>
+          <th onclick="sortBy('task')">작업명 ↕</th>
+          <th>요청 팀</th>
+          <th>수신 팀</th>
+          <th onclick="sortBy('priority')">우선순위 ↕</th>
+          <th onclick="sortBy('due')">희망 완료일 ↕</th>
+          <th>진행 상태</th>
+          <th>담당자</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div class="pagination">
+      <span id="pageInfo"></span>
+      <div class="page-btns" id="pageBtns"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 부서 코드 테이블
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const DEPARTMENTS = [
+    { name:'영업팀',     code:'SL' },
+    { name:'부동산팀',   code:'RE' },
+    { name:'운영기획팀', code:'OP' },
+    { name:'고객경험팀', code:'CX' },
+    { name:'사업전략팀', code:'BS' },
+    { name:'디자인팀',   code:'DS' },
+    { name:'마케팅팀',   code:'MK' },
+    { name:'백본팀',     code:'BB' },
+  ];
+  const getDeptName = code => DEPARTMENTS.find(d => d.code === code)?.name || code;
+
+  // ── 임시: 현재 로그인 사용자 (Google Sheets 연동 시 실제 계정으로 대체)
+  const CURRENT_USER = { name:'김디자인', dept:'DS' };
+
+  const REQUESTS = [
+    { id:'DS-2609-001', task:'10월 신제품 런칭 키비주얼 제작',   from:'MK', to:'DS', priority:'urgent', due:'2026-09-30', status:'wip',    writer:'홍길동',   handler:'김디자인' },
+    { id:'DS-2609-002', task:'회사 소개 브로셔 리뉴얼',          from:'BS', to:'DS', priority:'high',   due:'2026-10-05', status:'review', writer:'이전략',   handler:'김디자인' },
+    { id:'DS-2609-003', task:'SNS 카드뉴스 템플릿 3종',          from:'MK', to:'DS', priority:'normal', due:'2026-10-10', status:'new',    writer:'박마케팅', handler:'' },
+    { id:'MK-2609-001', task:'Q4 이메일 뉴스레터 기획',          from:'SL', to:'MK', priority:'normal', due:'2026-10-01', status:'wip',    writer:'최영업',   handler:'이마케팅' },
+    { id:'MK-2609-002', task:'신규 고객 온보딩 콘텐츠 제작',     from:'CX', to:'MK', priority:'high',   due:'2026-09-28', status:'wip',    writer:'정경험',   handler:'이마케팅' },
+    { id:'OP-2609-001', task:'사무용품 발주 프로세스 개선',       from:'BB', to:'OP', priority:'low',    due:'2026-10-15', status:'new',    writer:'강백본',   handler:'' },
+    { id:'DS-2609-004', task:'채용 공고 배너 디자인',            from:'BB', to:'DS', priority:'urgent', due:'2026-09-25', status:'done',   writer:'강백본',   handler:'김디자인' },
+    { id:'CX-2609-001', task:'고객 응대 매뉴얼 시각화',          from:'OP', to:'CX', priority:'normal', due:'2026-10-20', status:'new',    writer:'오운영',   handler:'' },
+    { id:'BS-2609-001', task:'2027 사업계획 발표 자료 정리',     from:'BB', to:'BS', priority:'high',   due:'2026-10-31', status:'review', writer:'강백본',   handler:'이전략' },
+    { id:'MK-2609-003', task:'블로그 콘텐츠 월간 캘린더',        from:'DS', to:'MK', priority:'low',    due:'2026-10-05', status:'wip',    writer:'김디자인', handler:'이마케팅' },
+    { id:'DS-2609-005', task:'앱 UI 아이콘 세트 제작',           from:'BB', to:'DS', priority:'normal', due:'2026-10-12', status:'wip',    writer:'강백본',   handler:'김디자인' },
+    { id:'RE-2609-001', task:'신규 매물 안내 리플렛 제작',       from:'RE', to:'DS', priority:'high',   due:'2026-09-27', status:'done',   writer:'윤부동산', handler:'김디자인' },
+  ];
+
+  const STATUS_META   = { new:{label:'접수',cls:'new'}, review:{label:'검토 중',cls:'review'}, wip:{label:'진행 중',cls:'wip'}, done:{label:'완료',cls:'done'}, rejected:{label:'반려',cls:'rejected'} };
+  const PRIORITY_META = { urgent:{label:'긴급',cls:'urgent'}, high:{label:'높음',cls:'high'}, normal:{label:'보통',cls:'normal'}, low:{label:'낮음',cls:'low'} };
+  const PRIORITY_ORDER = { urgent:0, high:1, normal:2, low:3 };
+
+  // ── 상태 ──
+  let currentTab = 'all';
+  let sortKey = 'id';
+  let sortAsc = true;
+  let currentPage = 1;
+  const PAGE_SIZE = 10;
+
+  function fmtDate(str) { if(!str) return '—'; const[,m,d]=str.split('-'); return `${m}/${d}`; }
+  function dueCls(str, status) {
+    if(!str || status==='done') return 'date-cell';
+    const diff = (new Date(str)-new Date())/86400000;
+    if(diff<0) return 'date-cell overdue';
+    if(diff<=3) return 'date-cell soon';
+    return 'date-cell';
+  }
+
+  // ── 부서 드롭다운 채우기 ──
+  function populateDeptFilter() {
+    const sel = document.getElementById('fDept');
+    DEPARTMENTS.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.code; opt.textContent = d.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  // ── URL 파라미터 파싱 ──
+  function parseParams() {
+    const p = new URLSearchParams(location.search);
+    const view = p.get('view');
+    const dept = p.get('dept');
+    const q    = p.get('q');
+    if (view === 'mine')     { currentTab = 'mine';     document.getElementById('tab-mine').click(); }
+    if (view === 'received') { currentTab = 'received'; document.getElementById('tab-received').click(); }
+    if (dept && dept !== 'ALL') document.getElementById('fDept').value = dept;
+    if (q) document.getElementById('fSearch').value = q;
+  }
+
+  // ── 필터링 ──
+  function getFiltered() {
+    const status   = document.getElementById('fStatus').value;
+    const priority = document.getElementById('fPriority').value;
+    const dept     = document.getElementById('fDept').value;
+    const q        = document.getElementById('fSearch').value.toLowerCase();
+
+    return REQUESTS.filter(r => {
+      if (currentTab === 'mine'     && r.writer  !== CURRENT_USER.name) return false;
+      if (currentTab === 'received' && r.handler !== CURRENT_USER.name) return false;
+      if (status   && r.status   !== status)   return false;
+      if (priority && r.priority !== priority) return false;
+      if (dept     && r.to       !== dept)     return false;
+      if (q && !( r.id.toLowerCase().includes(q) ||
+                  r.task.toLowerCase().includes(q) ||
+                  r.writer.toLowerCase().includes(q) ||
+                  r.handler.toLowerCase().includes(q) ||
+                  getDeptName(r.from).includes(q) ||
+                  getDeptName(r.to).includes(q) )) return false;
+      return true;
+    }).sort((a,b) => {
+      let va, vb;
+      if (sortKey==='due')      { va=a.due||'9999'; vb=b.due||'9999'; }
+      else if (sortKey==='priority') { va=PRIORITY_ORDER[a.priority]; vb=PRIORITY_ORDER[b.priority]; }
+      else                      { va=a[sortKey]; vb=b[sortKey]; }
+      if (va < vb) return sortAsc ? -1 : 1;
+      if (va > vb) return sortAsc ?  1 : -1;
+      return 0;
+    });
+  }
+
+  function applyFilters() { currentPage=1; render(); }
+  function resetFilters() {
+    ['fStatus','fPriority','fDept'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('fSearch').value='';
+    applyFilters();
+  }
+  function sortBy(key) {
+    if (sortKey===key) sortAsc=!sortAsc; else { sortKey=key; sortAsc=true; }
+    render();
+  }
+
+  function switchTab(tab) {
+    currentTab = tab;
+    ['all','mine','received'].forEach(t => {
+      document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);
+    });
+    // 페이지 타이틀 변경
+    const titles = { all:'전체 요청서', mine:'내가 보낸 요청', received:'내가 받은 요청' };
+    const subs   = { all:'모든 업무 요청을 확인하고 관리하세요', mine:`${CURRENT_USER.name}님이 보낸 요청 목록`, received:`${CURRENT_USER.name}님이 담당하는 요청 목록` };
+    document.getElementById('pageTitle').textContent    = titles[tab];
+    document.getElementById('pageSubtitle').textContent = subs[tab];
+    applyFilters();
+  }
+
+  // ── 렌더 ──
+  function render() {
+    const filtered = getFiltered();
+    const total    = filtered.length;
+    const start    = (currentPage-1)*PAGE_SIZE;
+    const pageRows = filtered.slice(start, start+PAGE_SIZE);
+
+    // 탭 카운트
+    document.getElementById('tc-all').textContent      = `${REQUESTS.length}`;
+    document.getElementById('tc-received').textContent = `${REQUESTS.filter(r=>r.handler===CURRENT_USER.name).length}`;
+
+    const tbody = document.getElementById('tableBody');
+    if (!pageRows.length) {
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="9">조건에 맞는 요청서가 없습니다</td></tr>`;
+    } else {
+      tbody.innerHTML = pageRows.map(r => {
+        const st = STATUS_META[r.status];
+        const pr = PRIORITY_META[r.priority];
+        return `
+          <tr onclick="openRequest('${r.id}')">
+            <td><span class="request-id">${r.id}</span></td>
+            <td><div class="task-name">${r.task}<small>${r.writer}</small></div></td>
+            <td><span class="dept-tag">${getDeptName(r.from)}</span></td>
+            <td><span class="dept-tag">${getDeptName(r.to)}</span></td>
+            <td><span class="priority-badge ${pr.cls}">${pr.label}</span></td>
+            <td><span class="${dueCls(r.due,r.status)}">${fmtDate(r.due)}</span></td>
+            <td><span class="status-badge ${st.cls}"><span class="status-dot"></span>${st.label}</span></td>
+            <td style="font-size:12px;color:var(--text-sub);">${r.handler||'<span style="color:var(--text-hint)">미배정</span>'}</td>
+            <td><button class="action-btn" onclick="event.stopPropagation();openRequest('${r.id}')">열기</button></td>
+          </tr>`;
+      }).join('');
+    }
+
+    // 페이지네이션
+    document.getElementById('pageInfo').textContent = `${start+1}–${Math.min(start+PAGE_SIZE,total)} / ${total}건`;
+    const totalPages = Math.max(1, Math.ceil(total/PAGE_SIZE));
+    const pbEl = document.getElementById('pageBtns');
+    pbEl.innerHTML = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+    for (let i=1; i<=totalPages; i++) {
+      pbEl.innerHTML += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    }
+    pbEl.innerHTML += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+  }
+
+  function goPage(p) {
+    const total = getFiltered().length;
+    const max   = Math.max(1, Math.ceil(total/PAGE_SIZE));
+    if (p < 1 || p > max) return;
+    currentPage = p; render();
+  }
+
+  function openRequest(id) {
+    window.open(`index.html?id=${id}`, '_blank');
+  }
+
+  // ── 초기화 ──
+  populateDeptFilter();
+  parseParams();
+  render();
+</script>
+<script src="api.js"></script>
+</body>
+</html>
