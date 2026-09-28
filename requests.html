@@ -244,23 +244,36 @@
   ];
   const getDeptName = code => DEPARTMENTS.find(d => d.code === code)?.name || code;
 
-  // ── 임시: 현재 로그인 사용자 (Google Sheets 연동 시 실제 계정으로 대체)
-  const CURRENT_USER = { name:'김디자인', dept:'DS' };
+  // ── 현재 로그인 사용자 (추후 실제 계정으로 대체)
+  const CURRENT_USER = { name:'', dept:'' };
 
-  const REQUESTS = [
-    { id:'DS-2609-001', task:'10월 신제품 런칭 키비주얼 제작',   from:'MK', to:'DS', priority:'urgent', due:'2026-09-30', status:'wip',    writer:'홍길동',   handler:'김디자인' },
-    { id:'DS-2609-002', task:'회사 소개 브로셔 리뉴얼',          from:'BS', to:'DS', priority:'high',   due:'2026-10-05', status:'review', writer:'이전략',   handler:'김디자인' },
-    { id:'DS-2609-003', task:'SNS 카드뉴스 템플릿 3종',          from:'MK', to:'DS', priority:'normal', due:'2026-10-10', status:'new',    writer:'박마케팅', handler:'' },
-    { id:'MK-2609-001', task:'Q4 이메일 뉴스레터 기획',          from:'SL', to:'MK', priority:'normal', due:'2026-10-01', status:'wip',    writer:'최영업',   handler:'이마케팅' },
-    { id:'MK-2609-002', task:'신규 고객 온보딩 콘텐츠 제작',     from:'CX', to:'MK', priority:'high',   due:'2026-09-28', status:'wip',    writer:'정경험',   handler:'이마케팅' },
-    { id:'OP-2609-001', task:'사무용품 발주 프로세스 개선',       from:'BB', to:'OP', priority:'low',    due:'2026-10-15', status:'new',    writer:'강백본',   handler:'' },
-    { id:'DS-2609-004', task:'채용 공고 배너 디자인',            from:'BB', to:'DS', priority:'urgent', due:'2026-09-25', status:'done',   writer:'강백본',   handler:'김디자인' },
-    { id:'CX-2609-001', task:'고객 응대 매뉴얼 시각화',          from:'OP', to:'CX', priority:'normal', due:'2026-10-20', status:'new',    writer:'오운영',   handler:'' },
-    { id:'BS-2609-001', task:'2027 사업계획 발표 자료 정리',     from:'BB', to:'BS', priority:'high',   due:'2026-10-31', status:'review', writer:'강백본',   handler:'이전략' },
-    { id:'MK-2609-003', task:'블로그 콘텐츠 월간 캘린더',        from:'DS', to:'MK', priority:'low',    due:'2026-10-05', status:'wip',    writer:'김디자인', handler:'이마케팅' },
-    { id:'DS-2609-005', task:'앱 UI 아이콘 세트 제작',           from:'BB', to:'DS', priority:'normal', due:'2026-10-12', status:'wip',    writer:'강백본',   handler:'김디자인' },
-    { id:'RE-2609-001', task:'신규 매물 안내 리플렛 제작',       from:'RE', to:'DS', priority:'high',   due:'2026-09-27', status:'done',   writer:'윤부동산', handler:'김디자인' },
-  ];
+  // 실제 데이터 (API에서 로드)
+  let REQUESTS = [];
+
+  const API_URL = 'https://script.google.com/a/macros/buildersncompany.com/s/AKfycbzQ4Ba7iyTmA0soaJxP-nczm51Cay7fSfp7vTAXLsU5gctILsxu8fdjIw2Cgnu_frru/exec';
+
+  async function loadRequests() {
+    try {
+      const res  = await fetch(`${API_URL}?action=list`);
+      const json = await res.json();
+      if (json.success && json.data) {
+        REQUESTS = json.data.map(r => ({
+          id:       r.request_id,
+          task:     r.task_name,
+          from:     r.from_dept,
+          to:       r.to_dept,
+          priority: r.priority || 'normal',
+          due:      r.due_date  || '',
+          status:   r.status    || 'new',
+          writer:   r.from_name || '',
+          handler:  r.to_name   || '',
+        }));
+      }
+    } catch(e) {
+      console.log('데이터 로드 실패:', e.message);
+    }
+    render();
+  }
 
   const STATUS_META   = { new:{label:'접수',cls:'new'}, review:{label:'검토 중',cls:'review'}, wip:{label:'진행 중',cls:'wip'}, done:{label:'완료',cls:'done'}, rejected:{label:'반려',cls:'rejected'} };
   const PRIORITY_META = { urgent:{label:'긴급',cls:'urgent'}, high:{label:'높음',cls:'high'}, normal:{label:'보통',cls:'normal'}, low:{label:'낮음',cls:'low'} };
@@ -417,7 +430,7 @@
   // ── 초기화 ──
   populateDeptFilter();
   parseParams();
-  render();
+  loadRequests(); // 실제 데이터 로드
 </script>
 <script src="api.js"></script>
 </body>
