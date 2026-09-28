@@ -453,22 +453,9 @@
   const getDeptName = code => DEPARTMENTS.find(d => d.code === code)?.name || code;
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 샘플 데이터 (Google Sheets 연동 시 대체)
+  // 샘플 데이터 제거 — 실제 구글 시트 데이터만 사용
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  const REQUESTS = [
-    { id:'DS-2609-001', task:'10월 신제품 런칭 키비주얼 제작',   from:'MK', to:'DS', priority:'urgent', due:'2026-09-30', status:'wip',    writer:'홍길동',   handler:'김디자인' },
-    { id:'DS-2609-002', task:'회사 소개 브로셔 리뉴얼',          from:'BS', to:'DS', priority:'high',   due:'2026-10-05', status:'review', writer:'이전략',   handler:'김디자인' },
-    { id:'DS-2609-003', task:'SNS 카드뉴스 템플릿 3종',          from:'MK', to:'DS', priority:'normal', due:'2026-10-10', status:'new',    writer:'박마케팅', handler:'' },
-    { id:'MK-2609-001', task:'Q4 이메일 뉴스레터 기획',          from:'SL', to:'MK', priority:'normal', due:'2026-10-01', status:'wip',    writer:'최영업',   handler:'이마케팅' },
-    { id:'MK-2609-002', task:'신규 고객 온보딩 콘텐츠 제작',     from:'CX', to:'MK', priority:'high',   due:'2026-09-28', status:'wip',    writer:'정경험',   handler:'이마케팅' },
-    { id:'OP-2609-001', task:'사무용품 발주 프로세스 개선',       from:'BB', to:'OP', priority:'low',    due:'2026-10-15', status:'new',    writer:'강백본',   handler:'' },
-    { id:'DS-2609-004', task:'채용 공고 배너 디자인',            from:'BB', to:'DS', priority:'urgent', due:'2026-09-25', status:'done',   writer:'강백본',   handler:'김디자인' },
-    { id:'CX-2609-001', task:'고객 응대 매뉴얼 시각화',          from:'OP', to:'CX', priority:'normal', due:'2026-10-20', status:'new',    writer:'오운영',   handler:'' },
-    { id:'BS-2609-001', task:'2027 사업계획 발표 자료 정리',     from:'BB', to:'BS', priority:'high',   due:'2026-10-31', status:'review', writer:'강백본',   handler:'이전략' },
-    { id:'MK-2609-003', task:'블로그 콘텐츠 월간 캘린더',        from:'DS', to:'MK', priority:'low',    due:'2026-10-05', status:'wip',    writer:'김디자인', handler:'이마케팅' },
-    { id:'DS-2609-005', task:'앱 UI 아이콘 세트 제작',           from:'BB', to:'DS', priority:'normal', due:'2026-10-12', status:'wip',    writer:'강백본',   handler:'김디자인' },
-    { id:'RE-2609-001', task:'신규 매물 안내 리플렛 제작',       from:'RE', to:'DS', priority:'high',   due:'2026-09-27', status:'done',   writer:'윤부동산', handler:'김디자인' },
-  ];
+  const REQUESTS = [];
 
   const STATUS_META = {
     new:      { label:'접수',    cls:'new' },
@@ -746,13 +733,13 @@
     }).join('');
   }
 
-  // 샘플 데이터로 먼저 렌더링 후 실제 데이터로 교체
-  renderRecent();
-  renderDeptChart();
-  renderFromChart();
-  renderDonut();
-  renderUrgent();
-  loadRealData(); // 실제 구글 시트 데이터 로드
+  // 실제 구글 시트 데이터 로드 (빈 상태에서 시작)
+  renderRecent();       // 빈 테이블
+  renderDeptChart();    // 빈 차트
+  renderFromChart();    // 빈 차트
+  renderDonut();        // 빈 도넛
+  renderUrgent();       // 빈 위젯
+  loadRealData();       // 실제 데이터 로드 후 교체
 </script>
 <script src="api.js"></script>
 </body>
